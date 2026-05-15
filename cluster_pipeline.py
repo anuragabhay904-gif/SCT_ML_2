@@ -1,4 +1,3 @@
-# Import libraries
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -8,20 +7,24 @@ from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 
 
-# Load Dataset
+# Loading the dataset
 df = pd.read_csv("Mall_Customers.csv")
+
+print("Dataset Loaded Successfully\n")
+
 print(df.head())
 
 
-#  Check Missing Values
+# Checking missing values
+print("\nMissing Values:\n")
 print(df.isnull().sum())
-# Remove missing values
+
+
+# Removing missing values if any
 df = df.dropna()
 
 
-# Select Important Features
-# Using multiple factors for better clustering
-
+# Selecting important columns
 features = [
     'Age',
     'Annual Income (k$)',
@@ -30,39 +33,34 @@ features = [
 
 X = df[features]
 
-print("\nSelected Features:")
+print("\nSelected Features:\n")
 print(X.head())
 
-# -----------------------------------
-# Step 4: Scale Features
-# -----------------------------------
 
+# Scaling the data
 scaler = StandardScaler()
 
 scaled_data = scaler.fit_transform(X)
 
-# -----------------------------------
-# Step 5: Find Best K Value
-# -----------------------------------
 
+# Finding best K value using Elbow Method
 wcss = []
 
 K = range(2, 11)
 
 for k in K:
-    kmeans = KMeans(
+
+    model = KMeans(
         n_clusters=k,
         random_state=42
     )
 
-    kmeans.fit(scaled_data)
+    model.fit(scaled_data)
 
-    wcss.append(kmeans.inertia_)
+    wcss.append(model.inertia_)
 
-# -----------------------------------
-# Step 6: Save Elbow Graph
-# -----------------------------------
 
+# Plotting Elbow Graph
 plt.figure(figsize=(8,5))
 
 plt.plot(K, wcss, marker='o')
@@ -75,12 +73,8 @@ plt.savefig("elbow_graph.png")
 
 plt.show()
 
-# -----------------------------------
-# Step 7: Train K-Means Model
-# -----------------------------------
 
-# Beginner-friendly choice
-
+# Training K-Means model
 kmeans = KMeans(
     n_clusters=5,
     random_state=42
@@ -88,13 +82,12 @@ kmeans = KMeans(
 
 clusters = kmeans.fit_predict(scaled_data)
 
-# Add cluster column
+
+# Adding cluster column
 df['Cluster'] = clusters
 
-# -----------------------------------
-# Step 8: Evaluate Model
-# -----------------------------------
 
+# Evaluating the model
 score = silhouette_score(
     scaled_data,
     clusters
@@ -103,21 +96,21 @@ score = silhouette_score(
 print("\nModel Evaluation")
 print("----------------------")
 
-print("Silhouette Score:", round(score, 2))
+print("Silhouette Score :", round(score, 2))
+
 
 # Simple interpretation
-
 if score > 0.5:
-    print("Clusters are well separated.")
+    print("Clusters are properly separated")
+
 elif score > 0.3:
-    print("Clusters are reasonably separated.")
+    print("Clusters are reasonably separated")
+
 else:
-    print("Clusters have weak separation.")
+    print("Clusters are not clearly separated")
 
-# -----------------------------------
-# Step 9: Save Cluster Visualization
-# -----------------------------------
 
+# Visualizing customer clusters
 plt.figure(figsize=(10,6))
 
 sns.scatterplot(
@@ -128,25 +121,22 @@ sns.scatterplot(
     s=80
 )
 
-plt.title("Customer Segmentation")
+plt.title("Customer Segmentation using K-Means")
 
 plt.savefig("customer_clusters.png")
 
 plt.show()
 
-# -----------------------------------
-# Step 10: Cluster Summary
-# -----------------------------------
 
+# Cluster Summary
 cluster_summary = df.groupby('Cluster')[features].mean()
 
-print("\nCluster Summary:")
+print("\nCluster Summary:\n")
+
 print(cluster_summary)
 
-# -----------------------------------
-# Step 11: Save Final Output
-# -----------------------------------
 
+# Saving final output
 df.to_csv(
     "customer_segmented_output.csv",
     index=False
